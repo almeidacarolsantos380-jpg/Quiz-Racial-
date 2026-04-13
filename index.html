@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz: Desigualdade Racial no Brasil</title>
+    <style>
+        :root {
+            --primary: #5d4037;
+            --accent: #d32f2f;
+            --bg: #fdf5e6;
+            --text: #3e2723;
+            --white: #ffffff;
+            --correct: #388e3c;
+            --wrong: #c62828;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        #quiz-container {
+            background: var(--white);
+            max-width: 700px;
+            width: 100%;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        }
+
+        .header { text-align: center; margin-bottom: 20px; }
+        .progress { text-align: right; color: #795548; font-weight: bold; margin-bottom: 10px;}
+        .question { font-size: 1.25rem; font-weight: bold; margin-bottom: 20px; color: var(--primary); }
+        
+        .options { display: grid; gap: 12px; }
+        .option-btn {
+            padding: 15px;
+            border: 2px solid #d7ccc8;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            text-align: left;
+            font-size: 1rem;
+            transition: 0.2s;
+            color: var(--text);
+        }
+        .option-btn:hover:not([disabled]) { border-color: var(--primary); background: #efebe9; }
+        
+        .correct-style { background-color: var(--correct) !important; color: white; border-color: var(--correct) !important; }
+        .wrong-style { background-color: var(--wrong) !important; color: white; border-color: var(--wrong) !important; }
+
+        #explanation {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background: #f5f5f5;
+            display: none;
+            line-height: 1.5;
+            border-left: 5px solid var(--primary);
+        }
+
+        #next-btn {
+            display: none;
+            margin: 20px auto 0;
+            padding: 12px 40px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        #certificate {
+            display: none;
+            border: 8px double var(--primary);
+            padding: 40px;
+            text-align: center;
+            background: #fff;
+            margin-top: 20px;
+        }
+        .cert-title { font-size: 2rem; color: var(--primary); font-family: 'Georgia', serif; margin-bottom: 20px;}
+        .cert-name { font-size: 1.8rem; font-weight: bold; color: var(--accent); text-decoration: underline; }
+        .btn-restart { margin-top: 25px; padding: 12px 25px; cursor: pointer; background: var(--primary); color: white; border: none; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+<div id="quiz-container">
+    <div id="setup-area" style="text-align: center;">
+        <h1 style="color: var(--primary)">Estudo sobre Desigualdade Racial</h1>
+        <p>Este quiz foi baseado em dados do IBGE, Ipea e Atlas da Violência.</p>
+        <p>Digite seu nome para o certificado:</p>
+        <input type="text" id="user-name" placeholder="Seu nome aqui" style="padding: 12px; width: 80%; margin-bottom: 20px; border: 2px solid #d7ccc8; border-radius: 8px;">
+        <br>
+        <button onclick="startQuiz()" style="padding: 15px 40px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1.1rem;">Iniciar Desafio</button>
+    </div>
+
+    <div id="quiz-content" style="display: none;">
+        <div class="progress" id="progress"></div>
+        <div class="question" id="question"></div>
+        <div class="options" id="options"></div>
+        <div id="explanation"></div>
+        <button id="next-btn" onclick="nextQuestion()">Próxima Pergunta</button>
+    </div>
+
+    <div id="result-area" style="display: none; text-align: center;">
+        <h2 id="final-compliment" style="color: var(--primary)"></h2>
+        <p id="final-score" style="font-size: 1.2rem;"></p>
+        
+        <div id="certificate">
+            <div class="cert-title">Certificado de Conhecimento</div>
+            <div class="cert-body" style="font-size: 1.2rem; color: #333;">
+                Certificamos que o(a) estudante<br><br>
+                <span class="cert-name" id="display-name"></span><br><br>
+                concluiu o quiz educativo sobre <strong>Desigualdade Racial e Racismo Estrutural</strong>, 
+                [span_0](start_span)[span_1](start_span)baseado em indicadores sociais brasileiros[span_0](end_span)[span_1](end_span).
+            </div>
+            <p style="margin-top: 30px;"><strong>Nota: <span id="display-score"></span>/20</strong> | Data: <span id="cert-date"></span></p>
+        </div>
+        <p style="margin-top: 15px; font-style: italic; color: #555;">Tire um print do seu certificado!</p>
+        <button class="btn-restart" onclick="location.reload()">Refazer Quiz</button>
+    </div>
+</div>
+
+<script>
+    const questions = [
+        [span_2](start_span){ q: "O que caracteriza a desigualdade racial?", o: ["Pessoas de diferentes raças com mesmas condições de vida.", "Diferentes condições de renda, educação e oportunidades por raça.", "Apenas o preconceito individual entre vizinhos.", "Uma coincidência do acaso."], a: 1, info: "A desigualdade racial ocorre quando há disparidade em renda, educação e oportunidades entre diferentes raças[span_2](end_span)." },
+        [span_3](start_span){ q: "O que é racismo estrutural?", o: ["Apenas um insulto individual.", "Algo presente na estrutura da sociedade influenciando direitos.", "Um evento que só ocorreu no passado.", "Leis que protegem apenas pessoas brancas."], a: 1, info: "O racismo estrutural influencia o acesso a direitos e oportunidades de forma sistêmica[span_3](end_span)." },
+        [span_4](start_span){ q: "Segundo o IBGE, como é a renda de pessoas negras em relação às brancas?", o: ["É exatamente igual em todas as funções.", "Recebem salários menores exercendo funções semelhantes.", "Negros recebem mais em cargos de liderança.", "Não há dados sobre isso."], a: 1, info: "Pessoas negras recebem salários menores mesmo exercendo funções semelhantes[span_4](end_span)." },
+        [span_5](start_span){ q: "O que os dados mostram sobre cargos de liderança?", o: ["Pessoas negras ocupam a maioria desses cargos.", "Pessoas negras têm menos acesso a cargos de liderança.", "Há equilíbrio total no mercado de trabalho.", "O IBGE não mede cargos de liderança."], a: 1, info: "O menor acesso a cargos de liderança evidencia a desigualdade no mercado[span_5](end_span)." },
+        [span_6](start_span){ q: "Qual o rendimento-hora médio total de brancos segundo o gráfico do IBGE?", o: ["R$ 10,9", "R$ 18,4", "R$ 9,2", "R$ 7,0"], a: 1, info: "O rendimento-hora médio total de pessoas brancas é de R$ 18,4[span_6](end_span)." },
+        [span_7](start_span){ q: "Qual o rendimento-hora médio de pessoas negras/pardas sem instrução?", o: ["R$ 9,2", "R$ 10,9", "R$ 7,0", "R$ 18,4"], a: 2, info: "Para quem não tem instrução, o valor médio é de R$ 7,0 para negros ou pardos[span_7](end_span)." },
+        [span_8](start_span){ q: "Qual a porcentagem aproximada de vítimas de homicídio negras no Brasil?", o: ["25%", "50%", "75%", "90%"], a: 2, info: "De acordo com o Atlas da Violência, cerca de 75% das vítimas de homicídio são pessoas negras[span_8](end_span)." },
+        [span_9](start_span){ q: "Qual foi a taxa de homicídios de negros por 100 mil hab. em 2017?", o: ["16,1", "37,0", "43,1", "37,6"], a: 2, info: "Em 2017, a taxa de homicídios registrados de negros atingiu 43,1[span_9](end_span)." },
+        [span_10](start_span){ q: "Comparando 2012 e 2022, a taxa de homicídios de negros sempre foi:", o: ["Menor que a de não negros.", "Maior que a de não negros.", "Igual à de não negros.", "Oscilante, ficando menor em 2022."], a: 1, info: "Os gráficos mostram que a taxa de negros é sistematicamente superior à de não negros[span_10](end_span)." },
+        [span_11](start_span){ q: "Sobre o ensino superior, qual grupo tem menos acesso no Brasil?", o: ["Pessoas brancas.", "Pessoas negras (pretas e pardas).", "Imigrantes europeus.", "Grupos de alta renda."], a: 1, info: "Pessoas negras ainda possuem menos acesso ao ensino superior[span_11](end_span)." },
+        [span_12](start_span){ q: "Em 2018, qual era a taxa (%) de brancos de 18-24 anos no ensino superior?", o: ["18,3%", "16,8%", "36,1%", "32,9%"], a: 2, info: "Em 2018, a taxa para jovens brancos era de 36,1%[span_12](end_span)." },
+        [span_13](start_span){ q: "Qual a origem histórica dessa desigualdade no Brasil?", o: ["A industrialização recente.", "O período de escravidão de mais de 300 anos.", "As migrações do século XXI.", "A falta de recursos naturais."], a: 1, info: "A desigualdade tem origem histórica nos mais de 300 anos de escravidão[span_13](end_span)." },
+        [span_14](start_span){ q: "O que aconteceu após a abolição em 1888?", o: ["O Estado deu terras e escolas aos ex-escravizados.", "A população negra não recebeu apoio do Estado.", "Houve pleno emprego para todos os negros.", "A desigualdade acabou imediatamente."], a: 1, info: "Após 1888, não houve apoio estatal como acesso à educação ou emprego[span_14](end_span)." },
+        [span_15](start_span){ q: "Quais as consequências citadas para pessoas negras?", o: ["Acesso privilegiado a hospitais.", "Dificuldades no mercado de trabalho e salários menores.", "Isenção total de impostos.", "Maior proteção contra violência."], a: 1, info: "As consequências incluem salários menores e mais dificuldades no mercado[span_15](end_span)." },
+        [span_16](start_span){ q: "Qual política pública é citada como solução para o acesso à educação?", o: ["Redução de impostos para empresas.", "Cotas raciais.", "Privatização de universidades.", "Aumento da carga horária de trabalho."], a: 1, info: "As cotas raciais são citadas como ferramentas que ajudam no acesso à educação[span_16](end_span)." },
+        [span_17](start_span){ q: "Além das cotas, o que mais é fundamental para reduzir a desigualdade?", o: ["Representatividade em espaços de poder.", "Ignorar os dados históricos.", "Acabar com o IBGE.", "Apenas o esforço individual."], a: 0, info: "A representatividade em espaços de poder é considerada fundamental[span_17](end_span)." },
+        [span_18](start_span){ q: "A desigualdade racial no Brasil é uma coincidência?", o: ["Sim, acontece em qualquer país.", "Não, é resultado de um processo histórico.", "Sim, por causa da geografia.", "Não há dados que confirmem isso."], a: 1, info: "Os dados provam que é resultado de um processo histórico (racismo estrutural)[span_18](end_span)." },
+        [span_19](start_span){ q: "Quais órgãos são citados como fontes confiáveis no estudo?", o: ["NASA e OMS.", "IBGE, IPEA e Atlas da Violência.", "Apenas jornais internacionais.", "Redes sociais e blogs."], a: 1, info: "O estudo baseia-se em fontes como IBGE, Ipea e Atlas da Violência[span_19](end_span)." },
+        [span_20](start_span){ q: "A desigualdade no acesso ao ensino superior começa onde?", o: ["Apenas no vestibular.", "Desde a educação básica.", "Depois de formado.", "Não existe essa desigualdade."], a: 1, info: "As desigualdades históricas e sociais começam desde a educação básica[span_20](end_span)." },
+        [span_21](start_span){ q: "Qual o rendimento-hora médio de brancos com ensino superior completo?", o: ["R$ 9,7", "R$ 12,4", "R$ 33,8", "R$ 23,4"], a: 2, info: "Brancos com ensino superior completo recebem R$ 33,8 por hora[span_21](end_span)." }
+    ];
+
+    let currentQ = 0; let score = 0; let userName = "";
+
+    function startQuiz() {
+        userName = document.getElementById("user-name").value.trim();
+        if (!userName) { alert("Digite seu nome para o certificado!"); return; }
+        document.getElementById("setup-area").style.display = "none";
+        document.getElementById("quiz-content").style.display = "block";
+        loadQuestion();
+    }
+
+    function loadQuestion() {
+        const qData = questions[currentQ];
+        document.getElementById("progress").innerText = `Questão ${currentQ + 1} de 20`;
+        document.getElementById("question").innerText = qData.q;
+        const optsDiv = document.getElementById("options");
+        optsDiv.innerHTML = "";
+        document.getElementById("explanation").style.display = "none";
+        document.getElementById("next-btn").style.display = "none";
+        qData.o.forEach((opt, idx) => {
+            const btn = document.createElement("button");
+            btn.className = "option-btn";
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(idx, btn);
+            optsDiv.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(idx, btn) {
+        const qData = questions[currentQ];
+        const allBtns = document.querySelectorAll(".option-btn");
+        allBtns.forEach(b => b.disabled = true);
+        const exp = document.getElementById("explanation");
+        exp.style.display = "block";
+        exp.innerHTML = "<strong>Explicação:</strong> " + qData.info;
+        if (idx === qData.a) { btn.classList.add("correct-style"); score++; } 
+        else { btn.classList.add("wrong-style"); allBtns[qData.a].classList.add("correct-style"); }
+        document.getElementById("next-btn").style.display = "block";
+    }
+
+    function nextQuestion() {
+        currentQ++;
+        if (currentQ < questions.length) loadQuestion();
+        else showResults();
+    }
+
+    function showResults() {
+        document.getElementById("quiz-content").style.display = "none";
+        document.getElementById("result-area").style.display = "block";
+        document.getElementById("final-score").innerText = `Pontuação: ${score} de 20`;
+        
+        let compliment = "";
+        [span_22](start_span)if(score >= 17) compliment = "Excelente! Você dominou todos os dados do estudo.[span_22](end_span)";
+        else if(score >= 12) compliment = "Muito bom! [span_23](start_span)[span_24](start_span)Você compreende bem as causas da desigualdade racial.[span_23](end_span)[span_24](end_span)";
+        else compliment = "Obrigado por participar! [span_25](start_span)Revisar os dados ajuda a entender melhor o racismo estrutural.[span_25](end_span)";
+        
+        document.getElementById("final-compliment").innerText = compliment;
+        document.getElementById("display-name").innerText = userName;
+        document.getElementById("display-score").innerText = score;
+        document.getElementById("cert-date").innerText = new Date().toLocaleDateString();
+        document.getElementById("certificate").style.display = "block";
+    }
+</script>
+</body>
+</html>
